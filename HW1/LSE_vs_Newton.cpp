@@ -57,28 +57,80 @@ vector<vector<double>> matrix_multiply(vector<vector<double>> matrixA,vector<vec
     return ret_matrix;
 }
 
-vector<vector<double>> matrix_inverse(vector<vector<double>> matrix){
+vector<vector<double>> LU[2];
+vector<vector<double>>* LU_decomposition(vector<vector<double>> matrix){
+    vector<vector<double>> L;
+    vector<vector<double>> U = matrix;
+    for(int i = 0; i < matrix.size(); i++){
+        vector<double> L_row(matrix.size(),0);
+        L_row[i] = 1;
+        for(int j = 0; j < i; j++){
+            // cout << "LU counter : " << i << j << endl;
+            double ratio = U[i][j]/U[j][j];
+            U[i][j] = 0;
+            for(int k = j+1; k < matrix.size(); k++){
+                U[i][k] = U[i][k] - ratio*U[j][k];
+            }
+            L_row[j] = ratio;
+        }
+        L.push_back(L_row);
+    }
+    LU[0] = L;
+    LU[1] = U;
+    return LU;
+}
+
+vector<vector<double>> matrix_inverse_byLU(vector<vector<double>> matrix){
     vector<vector<double>> ret_matrix;
+    vector<double> row1 = {3,-1,2};
+    vector<double> row2 = {6,-1,5};
+    vector<double> row3 = {-9,7,3};
+    vector<vector<double>> matrix1;
+    matrix1.push_back(row1);
+    matrix1.push_back(row2);
+    matrix1.push_back(row3);
+    vector<vector<double>>* LU = LU_decomposition(matrix1);
+    vector<vector<double>> L = LU [0];
+    vector<vector<double>> U = LU [1];
     return ret_matrix;
+}
+
+vector<double> LSE(int n,double lamda,vector<vector<double>> data){
+    vector<double> args;
+
+    vector<vector<double>> A;
+    //count matix A
+    for(int i = 0; i < data.size(); i++){
+        vector<double> row;
+        for(int j = 0; j < n; j++){
+            row.push_back(pow(data.at(i).at(0) , (n-1-j)));
+        }
+        A.push_back(row);
+    }
+
+    vector<vector<double>> tran_A = matrix_transpose(A);
+    vector<vector<double>> ATA = matrix_multiply(tran_A,A);
+
+    //ATA plus lamda*I
+    for(int i = 0; i < ATA.size(); i++){
+        ATA[i][i] = ATA[i][i] + lamda;
+    }
+
+    vector<vector<double>> ATA_plusL_inverse = matrix_inverse_byLU(ATA);
+
+    return args;
 }
 
 namespace plt = matplotlibcpp;
 int main()
 {
-    // vector<vector<double>> data = readCSV("raw.csv");
-    vector<vector<double>> data = readCSV("test.csv");
-    vector<vector<double>> tran_data = matrix_transpose(data);
+    vector<vector<double>> data = readCSV("raw.csv");
+    // vector<vector<double>> data = readCSV("test.csv");
+
+    LSE(3,2,data);
 
     // plot raw data
+    vector<vector<double>> tran_data = matrix_transpose(data);
     plt::plot(tran_data.at(0),tran_data.at(1),"ro");
-    plt::show();
-    vector<vector<double>> ATA = matrix_multiply(tran_data,data);
-
-    vector<string> msg {"Hello", "C++", "World", "from", "VS Code", "and the C++ extension!"};
-
-    for (const string& word : msg)
-    {
-        cout << word << " ";
-    }
-    cout << endl;
+    // plt::show();
 }
