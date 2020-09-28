@@ -40,7 +40,7 @@ vector<vector<double>> matrix_transpose(vector<vector<double>> matrix){
     }
     return tranposed_matrix;
 }
-
+////square mult square
 vector<vector<double>> matrix_multiply(vector<vector<double>> matrixA,vector<vector<double>> matrixB){
     vector<vector<double>> ret_matrix;
     for(int i = 0; i < matrixA.size(); i++){
@@ -80,19 +80,61 @@ vector<vector<double>>* LU_decomposition(vector<vector<double>> matrix){
     return LU;
 }
 
+vector<double> L_linearequation(vector<vector<double>> matrix, vector<double> b){
+    for(int i = 0; i < b.size(); i++){       
+        for(int j = 0; j < i; j++){
+            b[i] = b[i] - matrix[i][j]*b[j];
+            matrix[i][j] = 0;
+        }
+        b[i] = b[i] / matrix[i][i];
+        matrix[i][i] = 1;
+    }
+    return b;
+}
+vector<double> U_linearequation(vector<vector<double>> matrix, vector<double> b){
+    for(int i = 0; i < b.size(); i++){       
+        for(int j = 0; j < i; j++){
+            b[b.size()-1-i] = b[b.size()-1-i] - matrix[b.size()-1-i][b.size()-1-j]*b[b.size()-1-j];
+            matrix[b.size()-1-i][b.size()-1-j] = 0;
+        }
+        b[b.size()-1-i] = b[b.size()-1-i] / matrix[b.size()-1-i][b.size()-1-i];
+        matrix[b.size()-1-i][b.size()-1-i] = 1;
+    }
+    return b;
+}
+
 vector<vector<double>> matrix_inverse_byLU(vector<vector<double>> matrix){
     vector<vector<double>> ret_matrix;
-    vector<double> row1 = {3,-1,2};
-    vector<double> row2 = {6,-1,5};
-    vector<double> row3 = {-9,7,3};
-    vector<vector<double>> matrix1;
-    matrix1.push_back(row1);
-    matrix1.push_back(row2);
-    matrix1.push_back(row3);
-    vector<vector<double>>* LU = LU_decomposition(matrix1);
+    // vector<double> row1 = {3,-1,2};
+    // vector<double> row2 = {6,-1,5};
+    // vector<double> row3 = {-9,7,3};
+    // // vector<double> b = {10,2,15};
+    // vector<vector<double>> matrix1;
+    // matrix1.push_back(row1);
+    // matrix1.push_back(row2);
+    // matrix1.push_back(row3);
+    vector<vector<double>>* LU = LU_decomposition(matrix);
     vector<vector<double>> L = LU [0];
     vector<vector<double>> U = LU [1];
-    return ret_matrix;
+
+    vector<double> e1 = {1,0,0};
+    vector<double> e2 = {0,1,0};
+    vector<double> e3 = {0,0,1};
+
+    vector<double> y1 = L_linearequation(L,e1);
+    vector<double> y2 = L_linearequation(L,e2);
+    vector<double> y3 = L_linearequation(L,e3);
+    vector<double> x1 = U_linearequation(U,y1);
+    vector<double> x2 = U_linearequation(U,y2);
+    vector<double> x3 = U_linearequation(U,y3);
+    
+    ret_matrix.push_back(x1);
+    ret_matrix.push_back(x2);
+    ret_matrix.push_back(x3);
+
+    vector<vector<double>> tmp = matrix_multiply(matrix,matrix_transpose(ret_matrix));
+
+    return matrix_transpose(ret_matrix);
 }
 
 vector<double> LSE(int n,double lamda,vector<vector<double>> data){
@@ -117,8 +159,12 @@ vector<double> LSE(int n,double lamda,vector<vector<double>> data){
     }
 
     vector<vector<double>> ATA_plusL_inverse = matrix_inverse_byLU(ATA);
+    vector<vector<double>> ATA_plusL_inverseAT,b;
+    b.push_back(matrix_transpose(data)[1]);
+    ATA_plusL_inverseAT = matrix_multiply(ATA_plusL_inverse,matrix_transpose(A));
+    vector<vector<double>> tmp = matrix_multiply(ATA_plusL_inverseAT,matrix_transpose(b));
 
-    return args;
+    return matrix_transpose(tmp)[0];
 }
 
 namespace plt = matplotlibcpp;
@@ -127,7 +173,7 @@ int main()
     vector<vector<double>> data = readCSV("raw.csv");
     // vector<vector<double>> data = readCSV("test.csv");
 
-    LSE(3,2,data);
+    vector<double> arg_LSE = LSE(3,10000,data);
 
     // plot raw data
     vector<vector<double>> tran_data = matrix_transpose(data);
