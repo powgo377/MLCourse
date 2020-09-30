@@ -41,6 +41,32 @@ vector<vector<double>> matrix_transpose(vector<vector<double>> matrix){
     return tranposed_matrix;
 }
 
+vector<vector<double>> matrix_add(vector<vector<double>> matrixA,vector<vector<double>> matrixB){
+    for(int i = 0; i < matrixA.size(); i++){
+        for(int j = 0; j < matrixA[0].size(); j++){
+            matrixA[i][j] += matrixB[i][j];   
+        }
+    }
+    return matrixA;
+}
+vector<vector<double>> matrix_minus(vector<vector<double>> matrixA,vector<vector<double>> matrixB){
+    for(int i = 0; i < matrixA.size(); i++){
+        for(int j = 0; j < matrixA[0].size(); j++){
+            matrixA[i][j] -= matrixB[i][j];   
+        }
+    }
+    return matrixA;
+}
+
+vector<vector<double>> matrix_multiply_constant(vector<vector<double>> matrix,double constant){
+    for(int i = 0; i < matrix.size(); i++){
+        for(int j = 0; j < matrix[0].size(); j++){
+            matrix[i][j] *= constant;   
+        }
+    }
+    return matrix;
+}
+
 vector<vector<double>> matrix_multiply(vector<vector<double>> matrixA,vector<vector<double>> matrixB){
     vector<vector<double>> ret_matrix;
     for(int i = 0; i < matrixA.size(); i++){
@@ -121,8 +147,6 @@ vector<vector<double>> matrix_inverse_byLU(vector<vector<double>> matrix){
 }
 
 vector<double> LSE(int n,double lamda,vector<vector<double>> data){
-    vector<double> args;
-
     vector<vector<double>> A;
     //count matix A
     for(int i = 0; i < data.size(); i++){
@@ -150,16 +174,68 @@ vector<double> LSE(int n,double lamda,vector<vector<double>> data){
     return matrix_transpose(tmp)[0];
 }
 
+
+vector<vector<double>> LSE_grediant(vector<vector<double>> A, vector<vector<double>> data,vector<double> startpoint){
+    //2ATAx0 - 2ATb
+    vector<vector<double>> x0,b;
+    x0.push_back(startpoint);
+    b.push_back(matrix_transpose(data)[1]);
+
+    vector<vector<double>> ATAx0 = matrix_multiply(matrix_multiply(matrix_transpose(A),A),matrix_transpose(x0));
+    vector<vector<double>> ATb = matrix_multiply(matrix_transpose(A),matrix_transpose(b));
+
+    vector<vector<double>> ret = matrix_minus(matrix_multiply_constant(ATAx0,2),matrix_multiply_constant(ATb,2));
+    return ret;
+}
+vector<vector<double>> LSE_Hessian(vector<vector<double>> A){
+    //2ATA
+    vector<vector<double>> ATA = matrix_multiply(matrix_transpose(A),A);
+
+    // vector<vector<double>> diagATA;
+    // for(int i = 0 ; i < ATA.size(); i++){
+    //     vector<double> diagATAtmp(A.size(),0);
+    //     diagATAtmp[i] = ATA[i][i];
+    //     diagATA.push_back(diagATAtmp);
+    // }
+    // vector<vector<double>> ret = matrix_minus(matrix_multiply_constant(ATA,2),diagATA);
+    vector<vector<double>> ret = matrix_multiply_constant(ATA,2);
+    return ret;
+}
+vector<double> Newton(int n,vector<vector<double>> data){
+    //start from{1,1,...,1}
+    vector<double> argstmp(n,1);
+    vector<vector<double>> args;
+    args.push_back(argstmp);
+    args = matrix_transpose(args);
+    vector<vector<double>> A;
+    //count matix A
+    for(int i = 0; i < data.size(); i++){
+        vector<double> row;
+        for(int j = 0; j < n; j++){
+            row.push_back(pow(data.at(i).at(0) , (n-1-j)));
+        }
+        A.push_back(row);
+    }
+
+    for(int i = 0; i < 10; i++){
+        args = matrix_minus(args,matrix_multiply(matrix_inverse_byLU(LSE_Hessian(A)),LSE_grediant(A,data,matrix_transpose(args)[0])));
+    }
+
+    return matrix_transpose(args)[0];
+}
+
 namespace plt = matplotlibcpp;
 int main()
 {
+    double n = 3,lamda = 10000;
     vector<vector<double>> data = readCSV("raw.csv");
+    // vector<vector<double>> data = readCSV("test.csv");
     vector<vector<double>> tran_data = matrix_transpose(data);
     // plot raw data
     plt::plot(tran_data.at(0),tran_data.at(1),"ro");
 
     //LSE get args
-    vector<double> arg_LSE = LSE(3,0,data);
+    vector<double> arg_LSE = LSE(n,lamda,data);
     //LSE count loss
     double loss = 0;
     for(int i = 0; i < tran_data[0].size(); i++){
@@ -191,6 +267,9 @@ int main()
         }
     }
     plt::plot(x,LSE_perdict);
+
+    //Newton get args
+    vector<double> arg_Newton = Newton(n,data);
 
     
     plt::show();
