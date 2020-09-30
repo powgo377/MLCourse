@@ -270,7 +270,33 @@ int main()
 
     //Newton get args
     vector<double> arg_Newton = Newton(n,data);
-
+    //Newton count loss
+    loss = 0;
+    for(int i = 0; i < tran_data[0].size(); i++){
+        double perdict = 0;
+        for(int j = 0; j < arg_Newton.size(); j++){
+            perdict += arg_Newton[j]*pow(tran_data[0][i],arg_Newton.size()-1-j);
+        }
+        loss += pow(perdict-tran_data[1][i],2);
+    }
+    //Newton print result
+    cout << "Newton:" << endl << "Fitting line:" ;
+    for(int j = 0; j < arg_Newton.size(); j++){
+            if(j != arg_Newton.size() - 1){
+                cout << " " << arg_Newton[j] << "X^" << arg_Newton.size()-1-j << " +";
+            } else {
+                cout << " " << arg_Newton[j] << endl;
+            }
+    }
+    cout << "Total error: " << loss << endl;
+    //Newton plot curve
+    std::vector<double> Newton_perdict(point_nums);
+    for(int i=0; i < point_nums; i++) {
+        for(int j = 0; j < arg_LSE.size(); j++){
+            Newton_perdict[i] += arg_Newton[j]*pow(i-point_nums/2,arg_Newton.size()-1-j);
+        }
+    }
+    plt::plot(x,Newton_perdict);
     
     plt::show();
 }
