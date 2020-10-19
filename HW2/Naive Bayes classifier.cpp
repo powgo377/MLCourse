@@ -211,7 +211,23 @@ void discrete_test(vector<vector<vector<vector<int>>>> &pic_classified_in_bins,v
             }
             likelis[j] = likeli;
         }
-        cout << "1234" << endl;
+        vector<double> log_scale(0,0);
+        double sum = 0;
+        for(int i = 0; i < 10; i++){
+            log_scale.push_back(log(likelis[i])*(-1));
+            sum += log(likelis[i])*(-1);
+        }
+        double min = sum;
+        int min_count = 10;
+        for(int i = 0; i < 10; i++){
+            log_scale[i] = log_scale[i] / sum;
+            if(log_scale[i] < min){
+                min_count = i;
+                min = log_scale[i];
+            }
+        }
+        cout << "predict: "<< min_count <<"="<<int(t_labels[i])<<" ?"<< endl;
+        // cout << "1234" << endl;
     }
 }
 int main()
