@@ -147,9 +147,9 @@ vector<vector<vector<vector<int>>>> pre_process_data(vector<vector<vector<char>>
                 // cout << "1234" << endl;
                 int bin_rank = 0;
                 if(int(pictures[i][j][k])< 0){
-                    bin_rank = (int(pictures[i][j][k])+256)/32;
+                    bin_rank = (int(pictures[i][j][k])+256)/8;
                 }else{
-                    bin_rank = (int(pictures[i][j][k]))/32;    
+                    bin_rank = (int(pictures[i][j][k]))/8;    
                 }
                 ret[label][j][k][bin_rank] += 1;
             }
@@ -200,9 +200,9 @@ void discrete_test(vector<vector<vector<vector<int>>>> &pic_classified_in_bins,v
                 for(int l = 0; l < 28; l++){
                     int bin_level = 0;
                     if(int(t_pictures[i][k][l])< 0){
-                        bin_level = (int(t_pictures[i][k][l])+256)/32;
+                        bin_level = (int(t_pictures[i][k][l])+256)/8;
                     }else{
-                        bin_level = (int(t_pictures[i][k][l]))/32;    
+                        bin_level = (int(t_pictures[i][k][l]))/8;    
                     }
                     int bin_p = pic_classified_in_bins[j][k][l][bin_level];
                     long double j_count = static_cast<long double>(num_count[j]);
