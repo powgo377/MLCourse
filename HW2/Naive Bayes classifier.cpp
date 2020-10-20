@@ -131,12 +131,12 @@ vector<char> read_binary_to_t_labels(string image_file){
 }
 
 //int/row/col/bin
-vector<vector<vector<vector<int>>>> pre_process_data(vector<vector<vector<char>>> &pictures, vector<char> &labels){
+vector<vector<vector<vector<double>>>> pre_process_data(vector<vector<vector<char>>> &pictures, vector<char> &labels){
     //// init 0s to /int/row/col/bin
-    vector<int> bins(32, 0);
-    vector<vector<int>> cols(column_num,bins);
-    vector<vector<vector<int>>> rows(row_num,cols);
-    vector<vector<vector<vector<int>>>> ret(10,rows);
+    vector<double> bins(32, 0);
+    vector<vector<double>> cols(column_num,bins);
+    vector<vector<vector<double>>> rows(row_num,cols);
+    vector<vector<vector<vector<double>>>> ret(10,rows);
 
     //// count into bins
     for(int i = 0; i < labels.size(); i++){
@@ -176,6 +176,7 @@ vector<vector<vector<vector<int>>>> pre_process_data(vector<vector<vector<char>>
             }
         }
     }
+    
     // set min
     for(int label = 0; label < 10; label++){
         for(int i = 0; i < row_num; i++){
@@ -190,13 +191,44 @@ vector<vector<vector<vector<int>>>> pre_process_data(vector<vector<vector<char>>
     }
     return ret;
 }
+void pre_process_data_gaussian(vector<vector<vector<vector<double>>>> &pre){
+    for(int label = 0; label < 10; label++){
+        for(int i = 0; i < row_num; i++){
+            for(int j = 0; j < column_num; j++){
+                int count = 0;
+                double mean = 0;
+                long double deviation = 0;
+                for(int k = 0; k < 32; k++){
+                    count += pre[label][i][j][k];
+                    mean += pre[label][i][j][k] * k ;
+                }
+                mean = mean / count;
+                for(int k = 0; k < 32; k++){
+                    deviation += pre[label][i][j][k]*(k-mean)*(k-mean);
+                }
+                deviation = deviation / count;
+                deviation = sqrt(deviation);
 
-void discrete_test(vector<vector<vector<vector<int>>>> &pic_classified_in_bins,vector<vector<vector<char>>> &t_pictures,vector<char> &t_labels){
+                double sum = 0;
+                for(int k = 0; k < 32; k++){
+                    double tmp5 = exp((k-mean)*(k-mean)/(-2)/(deviation*deviation))/(deviation*sqrt(2*M_PI));
+                    sum += tmp5;
+                    // cout << "456" << endl;
+                    pre[label][i][j][k] = tmp5*count;
+                }
+                // cout << "456" << endl;
+            }
+        }
+    }
+}
+
+void discrete_test(vector<vector<vector<vector<double>>>> &pic_classified_in_bins,vector<vector<vector<char>>> &t_pictures,vector<char> &t_labels){
     for(int i = 0; i < t_labels.size(); i++){
         vector<long double> likelis(10,0);
         for(int j = 0; j < 10; j++){
             long double likeli = num_count[j]/static_cast<long double>(pic_num);
             for(int k = 0; k < 28; k++){
+                // cout << "1234" << endl;
                 for(int l = 0; l < 28; l++){
                     int bin_level = 0;
                     if(int(t_pictures[i][k][l])< 0){
@@ -204,7 +236,7 @@ void discrete_test(vector<vector<vector<vector<int>>>> &pic_classified_in_bins,v
                     }else{
                         bin_level = (int(t_pictures[i][k][l]))/8;    
                     }
-                    int bin_p = pic_classified_in_bins[j][k][l][bin_level];
+                    double bin_p = pic_classified_in_bins[j][k][l][bin_level];
                     long double j_count = static_cast<long double>(num_count[j]);
                     likeli *= bin_p/j_count;
                 }
@@ -235,11 +267,12 @@ int main()
     vector<vector<vector<char>>> pictures = read_binary_to_pics("train-images.idx3-ubyte");
     vector<char> labels = read_binary_to_labels("train-labels.idx1-ubyte");
     
-    vector<vector<vector<vector<int>>>> pic_classified_in_bins = pre_process_data(pictures,labels);
+    vector<vector<vector<vector<double>>>> pic_classified_in_bins = pre_process_data(pictures,labels);
+    // pre_process_data_gaussian(pic_classified_in_bins);
 
     vector<vector<vector<char>>> t_pictures = read_binary_to_t_pics("t10k-images.idx3-ubyte");
     vector<char> t_labels = read_binary_to_t_labels("t10k-labels.idx1-ubyte");
-
+    
     discrete_test(pic_classified_in_bins,t_pictures,t_labels);
     cout << "456" << endl;
     return 0;
