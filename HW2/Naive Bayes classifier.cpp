@@ -262,18 +262,55 @@ void discrete_test(vector<vector<vector<vector<double>>>> &pic_classified_in_bin
         // cout << "1234" << endl;
     }
 }
+vector<vector<vector<vector<double>>>> print_num(vector<vector<vector<vector<double>>>> &bins, bool discrete){
+    //// count into bins
+    for(int i = 0; i < 10; i++){
+        cout << "   " << endl;
+        for(int j = 0; j < row_num; j++){
+            for(int k = 0; k < column_num; k++){
+                if(discrete){
+                    int count = 0;
+                    for(int l = 0; l < 16; l++){
+                        count += bins[i][j][k][32-l-1];
+                    }
+
+                    if(count >= num_count[i]/2){
+                        cout << "1";
+                    }else{
+                        cout << "0";
+                    }
+                }else{
+                    bool is_black = false;
+                    for(int l = 1; l < 17; l++){
+                        if (bins[i][j][k][32-l-1] < bins[i][j][k][32-l]){
+                            is_black = true;
+                        }
+                    }
+
+                    if(is_black){
+                        cout << "1";
+                    }else{
+                        cout << "0";
+                    }
+                }
+            }
+            cout <<" :"<< j << endl;
+        }
+    }
+}
 int main()
 {
     vector<vector<vector<char>>> pictures = read_binary_to_pics("train-images.idx3-ubyte");
     vector<char> labels = read_binary_to_labels("train-labels.idx1-ubyte");
     
     vector<vector<vector<vector<double>>>> pic_classified_in_bins = pre_process_data(pictures,labels);
-    // pre_process_data_gaussian(pic_classified_in_bins);
+    pre_process_data_gaussian(pic_classified_in_bins);
 
-    vector<vector<vector<char>>> t_pictures = read_binary_to_t_pics("t10k-images.idx3-ubyte");
-    vector<char> t_labels = read_binary_to_t_labels("t10k-labels.idx1-ubyte");
+    // vector<vector<vector<char>>> t_pictures = read_binary_to_t_pics("t10k-images.idx3-ubyte");
+    // vector<char> t_labels = read_binary_to_t_labels("t10k-labels.idx1-ubyte");
     
-    discrete_test(pic_classified_in_bins,t_pictures,t_labels);
+    // discrete_test(pic_classified_in_bins,t_pictures,t_labels);
+    print_num(pic_classified_in_bins,false);
     cout << "456" << endl;
     return 0;
 }
