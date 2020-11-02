@@ -77,11 +77,33 @@ int main()
   // vector<vector<double>> S = matrix_inverse_byLU(S_inv);
   // vector<vector<double>> mean = matrix_multiply_constant(matrix_multiply(matrix_multiply(S,matrix_transpose(phi_matrix(n,test_x))),matrix_transpose(t)),b);
 
-
+  int test_count = 1;
   int cov_count = 0;
-  vector<vector<double>> prev_mean;
+  vector<double> init_mean_row(1,0);
+  vector<vector<double>> prev_mean(n,init_mean_row);
   while(true){
-    vector<double> new_data = gen_linear_data(n,a,w);
+    ////test
+    vector<double> new_data{0,0};
+    if(test_count == 1){
+      new_data = {-0.64152, 0.19039};
+      test_count++;
+    }else if(test_count == 2){
+      new_data = {0.07122, 1.63175};
+      test_count++;
+    }else if(test_count == 3){
+      new_data = {-0.19330, 0.24507};
+      test_count++;
+    }else{
+      new_data = gen_linear_data(n,a,w);
+    }
+    // vector<double> new_data = gen_linear_data(n,a,w);
+
+    ////perdict y of specific x
+    double perdict_mean = 0;
+    for (int i = 0; i< n; i++){
+      perdict_mean += prev_mean[i][0]*pow(new_data[0],i);
+    }
+    // cout << "Predictive distribution ~ N(" << perdict_mean <<endl;
   
     xs.push_back(new_data[0]);
     // vector<double> row{test_2[1]};
@@ -98,6 +120,7 @@ int main()
     // vector<vector<double>> sphitt= matrix_multiply(matrix_multiply(S,matrix_transpose(phi_matrix(n,test_x))),matrix_transpose(t));
     vector<vector<double>> mean = matrix_multiply_constant(matrix_multiply(matrix_multiply(S,matrix_transpose(phi_matrix(n,xs))),matrix_transpose(ts)),b);
 
+    ////Test for if coverage
     bool all_cov = true;
     for (int i = 0; i < prev_mean.size(); i++){
       int a = prev_mean[i][0]*1000, b = mean[i][0]*1000;
