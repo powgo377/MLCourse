@@ -96,22 +96,22 @@ int main()
   vector<vector<double>> prev_mean(n,init_mean_row);
   vector<vector<double>> prev_covariance = identity_matrix(n);
   while(true){
-    // ////test
-    // vector<double> new_data{0,0};
-    // if(test_count == 1){
-    //   new_data = {-0.64152, 0.19039};
-    //   test_count++;
-    // }else if(test_count == 2){
-    //   new_data = {0.07122, 1.63175};
-    //   test_count++;
-    // }else if(test_count == 3){
-    //   new_data = {-0.19330, 0.24507};
-    //   test_count++;
-    // }else{
-    //   new_data = gen_linear_data(n,a,w);
-    // }
+    ////test
+    vector<double> new_data{0,0};
+    if(test_count == 1){
+      new_data = {-0.64152, 0.19039};
+      test_count++;
+    }else if(test_count == 2){
+      new_data = {0.07122, 1.63175};
+      test_count++;
+    }else if(test_count == 3){
+      new_data = {-0.19330, 0.24507};
+      test_count++;
+    }else{
+      new_data = gen_linear_data(n,a,w);
+    }
     round++;
-    vector<double> new_data = gen_linear_data(n,a,w);
+    // vector<double> new_data = gen_linear_data(n,a,w);
 
     ////perdict y of specific x
     double perdict_mean = 0;
