@@ -59,7 +59,7 @@ x_train = np.array(x_data).reshape(-1, 1)
 y_train = np.array(y_data).reshape(-1, 1)
 
 ####x-axi
-x_axi = np.arange(-50, 50, 0.2).reshape(-1, 1)
+x_axi = np.arange(-60, 60, 0.2).reshape(-1, 1)
 
 ####before optimize
 l_init=1
